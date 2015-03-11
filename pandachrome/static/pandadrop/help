@@ -1,0 +1,98 @@
+NAMING GALLERIES
+================
+
+Galleries are named according to the name of the folder they're in. Spaces are
+allowed, but some special characters may not be. This depends on what characters
+you're allowed to use in filenames on your computer. 
+
+NAMING IMAGES / IMAGE TITLES
+============================
+
+Image titles are determined by the structure of the filename:
+
+  01_IMG_2914[The Title Of This Image].JPG
+
+   ^    ^                ^              ^
+   |    |                |              |
+   |    |                |              |
+   |    |                |              |___ file extension, mandatory
+   |    |                |
+   |    |                |__ title of image which appears on the site
+   |    |                       (surrounded by square brackets, spaces allowed)
+   |    |
+   |    |___________________ file-specific text (optional, eg original filename)
+   |________________________ image order prefix (optional)
+
+
+In the absence of a leading prefix, images will be ordered alphanumerically by
+the second part (e.g. the IMG_2914 part in the above example)
+
+
+Some image management tools (like Adobe Lightroom) allow you to write certain
+information to the filename when you export them. EXIF title, for example, can
+automatically be made part of the filename.
+
+ORDER OF GALLERIES
+==================
+
+Galleries will be displayed on your site in alphabetical order. 
+
+For example, the folders:
+
+animals/
+beaches/
+colour/
+
+will show galleries displayed in that order, with those names.
+
+But if you want a different order, you can do that with a prefix on the folder
+name. The prefix can be numbers or letters, and should be separated from the
+rest of the folder name with an underscore (_).
+
+For example:
+
+01_beaches
+02_colour
+03_animals
+
+will show up on your site as the following galleries:
+
+beaches
+colour
+animals
+
+You could achieve the same ordering thus:
+
+x_beaches
+y_colour
+z_animals
+
+The underscore lets us separate the name of the gallery to use on the site.
+
+(TODO: configurable separator character?)
+
+You can mix numbers and letters too! The ordering is then based on the table
+below. Notice that leading zeroes in numbers are significant, '02xxx' comes
+before '1xxx'.
+
+The following table show the order of characters as our system sees them:
+
+  1    12 +  23 6  34 A  45 L  56 W  67 b  78 m  89 x
+  2 !  13 ,  24 7  35 B  46 M  57 X  68 c  79 n  90 y
+  3 "  14 -  25 8  36 C  47 N  58 Y  69 d  80 o  91 z
+  4 #  15 .  26 9  37 D  48 O  59 Z  70 e  81 p  92 {
+  5 $  16 /  27 :  38 E  49 P  60 [  71 f  82 q  93 |
+  6 %  17 0  28 ;  39 F  50 Q  61 \  72 g  83 r  94 }
+  7 &  18 1  29 <  40 G  51 R  62 ]  73 h  84 s  95 ~
+  8 '  19 2  30 =  41 H  52 S  63 ^  74 i  85 t  96 
+  9 (  20 3  31 >  42 I  53 T  64 _  75 j  86 u
+ 10 )  21 4  32 ?  43 J  54 U  65 `  76 k  87 v
+ 11 *  22 5  33 @  44 K  55 V  66 a  77 l  88 w
+
+(Not all of these characters are valid in filenames, so watch out! I recommend
+you stick to '0'-'9', 'a'-'z', 'A'-'Z', '[', ']', '(' or ')'.
+
+ORDERING OF IMAGES
+==================
+
+Images follow the same ordering scheme as galleries (see ORDER OF GALLERIES)

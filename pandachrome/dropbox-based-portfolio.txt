@@ -1,0 +1,47 @@
+Top level folder name = Site name
+Folder names = gallery names
+file order (typographic) = viewing order on site
+ - or a file "order" to modify the file order!
+can intersperse text and images!
+"description" file in folder is the gallery description
+
+Still need to create an account.
+
+
+Image titles and descriptions? (EXIF?)
+
+Example:
+
+/portfolio
+    title.txt (Ciaron Linstead's Portfolio)
+    gallery1/
+        description.txt
+        order.txt (img2, img3, img1 on separate lines)
+        img1
+        img2
+        img3
+    gallery2/
+        description.txt
+        img
+        img
+        img
+    project1/
+        description.txt
+        gallery3/
+            description.txt
+            img
+            img
+        gallery4/
+            description.txt
+            img
+            img
+            img
+        
+
+FLASK NOTES / URL LAYOUT
+
+/login (see Dropbox python oauth2 example)
+
+/gallery/1/1/ (gallery/gallery_id/image_id)
+OR
+/1/1 (gallery_id/image_id)

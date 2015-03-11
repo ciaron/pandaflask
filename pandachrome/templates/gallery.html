@@ -1,0 +1,14 @@
+<!doctype html>
+<title>{{ session.title }}</title>
+<b>Gallery: {{ gallery_id }}</b></br>
+{% if image_id %}
+  <b>Selected image: [{{ image_id }}] </b>{{ g_images[image_id-1] }} <br/>
+{% else %}
+  <b>no image ID!</b>
+{% endif %}
+<br/>
+
+{% for image in g_images %}
+    image title: {{ image.title }}<br/>
+    <img src="{{ url_for('static', filename='pandadrop/'+image.path) }}" width=640/><br/>
+{% endfor %}
