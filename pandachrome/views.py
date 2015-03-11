@@ -3,16 +3,7 @@ from flask import Flask
 from flask import render_template
 from flask import session
 from pandachrome import app
-
-#api = Blueprint('api', __name__)
-
-#settings = 'settings'
-#dbox = '/home/linstead/Dropbox/apps/pandachrome/static/pandadrop'
-#allowed_exts=['.jpg', '.jpeg', '.png', 'tif', 'tiff']
-#prefix_sep = '_' # the character by which we separate the prefix from the gallery name
-
-#app = Flask(__name__)
-#app.secret_key='\xbdHV\xe1/[O\x7fD\xef\xb5\xf3\xe4\xa6\xac\x0c\xdaT\xc5\x83\x1c\xfb\xd1\xc3'
+from pandachrome.models import User
 
 dbox = app.config["DBOX"]
 prefix_sep = app.config["PREFIX_SEP"]
@@ -88,27 +79,10 @@ def get_gallery_images(gallery_id):
         files.append({'path': f, 'title': get_image_title(f)})
     return files
 
-#@app.before_first_request
-#def setup_user():
-#    user = User.query.filter_by(username='ciaron').first()
-#    session['SITE_TITLE'] = user.site_title
-
-#@app.before_first_request
-def parse_settings():
-    # TODO figure out session expiration/force expiration
-    with open(os.path.join(dbox, settings)) as f:
-        for line in f:
-            if line[0] != '#':
-                line.split(':')
-                session[line.split(':')[0]] = line.split(':')[1].strip()
-
-    f.close()
-
 @app.route('/')
 def index():
     galleries = get_gallery_names();
-    parse_settings()
-
+    
     if DEBUG:
         app.logger.debug(galleries)
 
@@ -118,12 +92,6 @@ def index():
 @app.route('/<int:gallery_id>/', defaults={'image_id':None})
 @app.route('/<int:gallery_id>/<int:image_id>/')
 def gallery(gallery_id, image_id=None):
-
-#    if 'title' not in session:
-#        parse_settings()
-    # TODO every time for now...
-    # let's get persistent data (eg. site title) from database.
-    parse_settings()
 
     g_images = get_gallery_images(gallery_id)
 

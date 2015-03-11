@@ -1,4 +1,4 @@
-import db
+from pandachrome import db
 
 class User(db.Model):
 
