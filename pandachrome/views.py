@@ -2,11 +2,9 @@ import os
 from flask import Flask
 from flask import render_template
 from flask import session
-from flask import current_app, Blueprint
-from . import models
-from . import app
+from pandachrome import app
 
-api = Blueprint('api', __name__)
+#api = Blueprint('api', __name__)
 
 #settings = 'settings'
 #dbox = '/home/linstead/Dropbox/apps/pandachrome/static/pandadrop'
@@ -20,7 +18,7 @@ dbox = app.config["DBOX"]
 prefix_sep = app.config["PREFIX_SEP"]
 settings = app.config["SETTINGS"]
 allowed_exts = app.config["ALLOWED_EXTS"]
-DEBUG=app.config["DEBUG"]
+DEBUG = app.config["DEBUG"]
 
 def is_image(f):
 
@@ -90,10 +88,10 @@ def get_gallery_images(gallery_id):
         files.append({'path': f, 'title': get_image_title(f)})
     return files
 
-@app.before_first_request
-def setup_user():
-    user = User.query.filter_by(username='ciaron').first()
-    session['SITE_TITLE'] = user.site_title
+#@app.before_first_request
+#def setup_user():
+#    user = User.query.filter_by(username='ciaron').first()
+#    session['SITE_TITLE'] = user.site_title
 
 #@app.before_first_request
 def parse_settings():
@@ -106,7 +104,7 @@ def parse_settings():
 
     f.close()
 
-@api.route('/')
+@app.route('/')
 def index():
     galleries = get_gallery_names();
     parse_settings()
@@ -117,8 +115,8 @@ def index():
     return render_template('main.html', galleries=galleries)
 
 # show a gallery, starting at first image (if none specified) or at image number 'image_id'
-@api.route('/<int:gallery_id>/', defaults={'image_id':None})
-@api.route('/<int:gallery_id>/<int:image_id>/')
+@app.route('/<int:gallery_id>/', defaults={'image_id':None})
+@app.route('/<int:gallery_id>/<int:image_id>/')
 def gallery(gallery_id, image_id=None):
 
 #    if 'title' not in session:
@@ -134,5 +132,5 @@ def gallery(gallery_id, image_id=None):
 
     return render_template('gallery.html', gallery_id=gallery_id, image_id=image_id, g_images=g_images, DBOXROOT=dbox)
 
-#if __name__ == '__main__':
-#    api.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
