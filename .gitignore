@@ -1,4 +1,4 @@
 instance/
 .*.swp
 *.pyc
-
+static/

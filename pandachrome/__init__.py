@@ -11,12 +11,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/linstead/Dropbox/apps/p
 db = SQLAlchemy(app)
 from pandachrome import views, models
 
-@app.before_first_request
-def setup_user():
-    app.logger.debug('in setup')
-    user = models.User.query.filter_by(username='ciaron').first()
-    session['site_title'] = user.site_title
-
+#@app.before_first_request
+#def setup_user():
+#    app.logger.debug('in setup')
+#    user = models.User.query.filter_by(username='ciaron').first()
+#    session['site_title'] = user.site_title
 
 #@app.before_first_request
 #def parse_settings():
