@@ -6,7 +6,7 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('config')
 app.config.from_pyfile('config.py')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/linstead/Dropbox/apps/pandachrome/sqlite.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/linstead/src/pandachrome.flask/pandachrome/sqlite.db'
 
 db = SQLAlchemy(app)
 from pandachrome import views, models
