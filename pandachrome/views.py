@@ -1,11 +1,11 @@
 import os
 from flask import Flask
 from flask import render_template
-from flask import session
+from flask import request, session, flash, redirect, url_for
 from pandachrome import app
 from pandachrome.models import User
 
-dbox = app.config["DBOX"]
+dbox = os.path.join(os.getcwd(), app.config["DBOX"])
 prefix_sep = app.config["PREFIX_SEP"]
 settings = app.config["SETTINGS"]
 allowed_exts = app.config["ALLOWED_EXTS"]
@@ -99,6 +99,22 @@ def gallery(gallery_id, image_id=None):
         app.logger.debug(g_images)
 
     return render_template('gallery.html', gallery_id=gallery_id, image_id=image_id, g_images=g_images, DBOXROOT=dbox)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        if username:
+#            db = get_db()
+#            db.execute('INSERT OR IGNORE INTO users (username) VALUES (?)', [username])
+#            db.commit()
+            session['user'] = username
+            flash('You were logged in')
+            return redirect(url_for('index'))
+        else:
+            flash("You must provide a username")
+    return render_template('login.html', error=error)
 
 if __name__ == '__main__':
     app.run(debug=True)
