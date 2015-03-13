@@ -10,5 +10,5 @@
 
 {% for image in g_images %}
     image title: {{ image.title }}<br/>
-    <img src="{{ url_for('static', filename='pandadrop/'+image.path) }}" width=640/><br/>
+    <img src="{{ image }}" width=640/><br/>
 {% endfor %}

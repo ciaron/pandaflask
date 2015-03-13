@@ -2,7 +2,7 @@ import os
 from flask import Flask
 from flask import render_template
 from flask import request, session, flash, redirect, url_for
-from pandachrome import app
+from pandachrome import app, cache
 from pandachrome.models import User
 
 dbox = os.path.join(os.getcwd(), app.config["DBOX"])
@@ -10,6 +10,29 @@ prefix_sep = app.config["PREFIX_SEP"]
 settings = app.config["SETTINGS"]
 allowed_exts = app.config["ALLOWED_EXTS"]
 DEBUG = app.config["DEBUG"]
+
+@cache.cached(timeout=300, key_prefix='all_galleries')
+def get_galleries():
+    galleries = {}
+
+    from dropbox import client
+    mimes = ['image/png', 'image/jpeg']
+    # my access_token (for user 'ciaron')
+    tk='8d6DYpbiA1IAAAAAAAApQDDC7Yobyv6WYumChXSkp3Zt3OVBwHSKplhSFnWdsr0g'
+    api=client.DropboxClient(tk)
+
+    r=api.metadata('/')
+
+    for i in r['contents']:
+        if i['is_dir'] == True:
+            p = i['path']
+
+            galleries[p] = []
+            g = api.metadata(p)
+            for img in g['contents']:
+                if img['mime_type'] in mimes:
+                    galleries[p].append(api.media(img['path'])['url'])
+    return galleries
 
 def is_image(f):
 
@@ -52,33 +75,38 @@ def get_image_title(f):
     else:
         return f[f.find("[")+1:f.find("]")]
 
-def get_gallery_folders():
-    # return a list of gallery folder names, i.e. including prefixes
-    galleries = [d for d in os.listdir(dbox) if os.path.isdir(os.path.join(dbox, d))]
-    return sorted(galleries)
+#def get_gallery_folders():
+#    # return a list of gallery folder names, i.e. including prefixes
+#    galleries = [d for d in os.listdir(dbox) if os.path.isdir(os.path.join(dbox, d))]
+#    return sorted(galleries)
 
 def get_gallery_names():
     # return a list of gallery names, (i.e. folders without prefixes), sorted by prefix
-    galleries = [d for d in os.listdir(dbox) if os.path.isdir(os.path.join(dbox, d))]
-    return [g.split(prefix_sep)[-1] for g in sorted(galleries)]
+    cached_galleries = get_galleries().keys()
+    return cached_galleries
 
 def get_gallery_images(gallery_id):
-    # return a sorted list of all the images for a specific gallery
-    files = []
 
-    # galleries are indexed from 1 for nicer URLs
-    gallery_folders = get_gallery_folders()
-    g = gallery_folders[gallery_id-1]
-
-    fs = [os.path.join(g, f) for f in os.listdir(os.path.join(dbox, g)) if is_image(os.path.join(dbox, g, f))]
-
-    if DEBUG:
-        app.logger.debug(sorted(fs))
-
-    for f in sorted(fs):
-        files.append({'path': f, 'title': get_image_title(f)})
+    cached_galleries = get_galleries()
+    files = cached_galleries[cached_galleries.keys()[gallery_id]]
     return files
 
+#    # return a sorted list of all the images for a specific gallery
+#    files = []
+#
+#    # galleries are indexed from 1 for nicer URLs
+#    gallery_folders = get_gallery_folders()
+#    g = gallery_folders[gallery_id-1]
+#
+#    fs = [os.path.join(g, f) for f in os.listdir(os.path.join(dbox, g)) if is_image(os.path.join(dbox, g, f))]
+#
+#    if DEBUG:
+#        app.logger.debug(sorted(fs))
+#
+#    for f in sorted(fs):
+#        files.append({'path': f, 'title': get_image_title(f)})
+#    return files
+#
 @app.route('/')
 def index():
     galleries = get_gallery_names();
