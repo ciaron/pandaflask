@@ -11,7 +11,7 @@ settings = app.config["SETTINGS"]
 allowed_exts = app.config["ALLOWED_EXTS"]
 DEBUG = app.config["DEBUG"]
 
-@cache.cached(timeout=30, key_prefix='all_galleries') # dropbox media timeout is 4 hours, 14400 secs
+@cache.cached(timeout=3600, key_prefix='all_galleries') # dropbox media timeout is 4 hours, 14400 secs; share timeout 1 hour (3600s)
 def get_galleries():
     galleries = {}
 
@@ -96,7 +96,7 @@ def get_gallery_names():
 def get_gallery_images(gallery_id):
 
     cached_galleries = get_galleries()
-    files = cached_galleries[cached_galleries.keys()[gallery_id]]
+    files = cached_galleries[cached_galleries.keys()[gallery_id-1]]
     return files
 
 #    # return a sorted list of all the images for a specific gallery
@@ -130,7 +130,7 @@ def index():
 def gallery(gallery_id, image_id=None):
 
     # currently a list of dropbox URLs
-    g_images = get_gallery_images(gallery_id)
+    g_images = get_gallery_images(gallery_id-1)
     app.logger.debug(g_images)
 
     # make a dict: {'title': 'url',...} 
