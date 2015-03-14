@@ -11,12 +11,13 @@ settings = app.config["SETTINGS"]
 allowed_exts = app.config["ALLOWED_EXTS"]
 DEBUG = app.config["DEBUG"]
 
-@cache.cached(timeout=300, key_prefix='all_galleries')
+@cache.cached(timeout=30, key_prefix='all_galleries') # dropbox media timeout is 4 hours, 14400 secs
 def get_galleries():
     galleries = {}
 
     from dropbox import client
     mimes = ['image/png', 'image/jpeg']
+
     # my access_token (for user 'ciaron')
     tk='8d6DYpbiA1IAAAAAAAApQDDC7Yobyv6WYumChXSkp3Zt3OVBwHSKplhSFnWdsr0g'
     api=client.DropboxClient(tk)
@@ -31,7 +32,14 @@ def get_galleries():
             g = api.metadata(p)
             for img in g['contents']:
                 if img['mime_type'] in mimes:
-                    galleries[p].append(api.media(img['path'])['url'])
+                    #u = api.media(img['path'])['url']
+
+                    u = api.share(img['path'], short_url=False)['url']
+                    if u.find('?dl=') == -1:
+                        u = u+'?dl=1'
+                    else:
+                        u = u.replace('?dl=0', '?dl=1')
+                    galleries[p].append(u)
     return galleries
 
 def is_image(f):
@@ -109,7 +117,7 @@ def get_gallery_images(gallery_id):
 #
 @app.route('/')
 def index():
-    galleries = get_gallery_names();
+    galleries = sorted(get_gallery_names())
     
     if DEBUG:
         app.logger.debug(galleries)
@@ -121,10 +129,15 @@ def index():
 @app.route('/<int:gallery_id>/<int:image_id>/')
 def gallery(gallery_id, image_id=None):
 
+    # currently a list of dropbox URLs
     g_images = get_gallery_images(gallery_id)
+    app.logger.debug(g_images)
 
-    if DEBUG:
-        app.logger.debug(g_images)
+    # make a dict: {'title': 'url',...} 
+    # ORDER?
+
+    #if DEBUG:
+    #    app.logger.debug(g_images)
 
     return render_template('gallery.html', gallery_id=gallery_id, image_id=image_id, g_images=g_images, DBOXROOT=dbox)
 
