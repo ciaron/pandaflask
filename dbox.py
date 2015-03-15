@@ -7,21 +7,21 @@ mimes = ['image/png', 'image/jpeg']
 tk='8d6DYpbiA1IAAAAAAAApQDDC7Yobyv6WYumChXSkp3Zt3OVBwHSKplhSFnWdsr0g'
 api=client.DropboxClient(tk)
 
-#r=api.metadata('/')
+r=api.metadata('/')
 
-#galleries = {}
+galleries = {}
 
-#for i in r['contents']:
-#    if i['is_dir'] == True:
-#        p = i['path']
-#
-#        galleries[p] = []
-#        g = api.metadata(p)
-#        for img in g['contents']:
-#            if img['mime_type'] in mimes:
-#                galleries[p].append(api.media(img['path'])['url'])
+for i in r['contents']:
+    if i['is_dir'] == True:
+        p = i['path']
 
-#pp.pprint(galleries)
+        galleries[p] = []
+        g = api.metadata(p)
+        for img in g['contents']:
+            if img['mime_type'] in mimes:
+                galleries[p].append(api.media(img['path'])['url'])
+
+pp.pprint(galleries)
 pp.pprint(api.delta(cursor='AAGwwrIqBAwFxeI6Hr4dpgdR6xxY1n3axBrOsXzTAecutolsJ5SNCvTKMc-4NoQMcwXZ42hjNVJBkAnVf0ONleCX0rsv_8HHv3VRSqIYzfPWWg'))
 
 """
@@ -56,12 +56,11 @@ otherwise:
 
 """
 """
-r = cl.metadata(galleries[0])
+r = api.metadata(galleries['/02_gallery3'])
 #pp.pprint(r)
 for i in r['contents']:
     if i['mime_type'] == 'image/png':
-        print cl.media(r['contents'][0]['path'])
+        print api.media(r['contents'][0]['path'])
         # {u'url': u'https://dl.dropboxusercontent.com/1/view/ga5sd7xpdnsbgov/apps/pandachrome/01_gallery1/150218_182055_0464.png', u'expires': u'Fri, 13 Mar 2015 15:56:24 +0000'}
         #print cl.media(r['path'])
-
 """

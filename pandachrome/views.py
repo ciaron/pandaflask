@@ -1,4 +1,6 @@
 import os
+import urllib
+from collections import OrderedDict
 from flask import Flask
 from flask import render_template
 from flask import request, session, flash, redirect, url_for
@@ -11,8 +13,19 @@ settings = app.config["SETTINGS"]
 allowed_exts = app.config["ALLOWED_EXTS"]
 DEBUG = app.config["DEBUG"]
 
-@cache.cached(timeout=3600, key_prefix='all_galleries') # dropbox media timeout is 4 hours, 14400 secs; share timeout 1 hour (3600s)
+def check_cache():
+    # if something changed on the Dropbox side, we invalidate our cache
+    # cursor = user.cursor
+    #if api.delta(cursor)['entries'] != []:
+    #    # delete the cache
+    #    cache.clear()
+    pass
+
+# dropbox media timeout is 4 hours, 14400 secs; share timeout 1 hour (3600s)
+@cache.cached(timeout=3600, key_prefix='all_galleries') 
 def get_galleries():
+    app.logger.debug('getting galleries')
+    # return an OrderedDict of galleries
     galleries = {}
 
     from dropbox import client
@@ -39,8 +52,9 @@ def get_galleries():
                         u = u+'?dl=1'
                     else:
                         u = u.replace('?dl=0', '?dl=1')
-                    galleries[p].append(u)
-    return galleries
+                    galleries[p].append(urllib.unquote(u))
+
+    return OrderedDict(sorted(galleries.items(), key=lambda t: t[0]))
 
 def is_image(f):
 
@@ -55,72 +69,53 @@ def is_image(f):
 def get_image_title(f):
     """
     get the image title from an image filename of the form
-    01_IMG_2914_[This is the title].JPG
-
-    Test cases:
-
-    01_DSC_111.jpg
-    02_DSC_111_[TITLE_TEST].jpg
-    [03].jpg
-    [04].jpg
-    [04_TEST].jpg
-    05_DSC.jpg
-    [05].jpg
-    150227_123401_0002[The Title].png
-    150303_150010_0002.PNG
-    1.jpg
-    [5].jpg
-    a.jpg
-    B.jpg
-    [TITLE_TEST].jpg
-    z.jpg
+    01+IMG_2914_[This is the title].JPG
 
     """
-    
     if f.find('[') == -1 or f.find(']') == -1:
         # no matching square brackets in filename
-        return os.path.splitext(os.path.split(f)[1])[0]
+        x = os.path.splitext(os.path.split(f)[1])[0]
     else:
-        return f[f.find("[")+1:f.find("]")]
+        x = f[f.find("[")+1:f.find("]")]
 
-#def get_gallery_folders():
-#    # return a list of gallery folder names, i.e. including prefixes
-#    galleries = [d for d in os.listdir(dbox) if os.path.isdir(os.path.join(dbox, d))]
-#    return sorted(galleries)
+    try: 
+        x = x.split(prefix_sep)[1]
+    except:
+        pass
+
+    return x
 
 def get_gallery_names():
     # return a list of gallery names, (i.e. folders without prefixes), sorted by prefix
+    check_cache()
     cached_galleries = get_galleries().keys()
-    return cached_galleries
+    return [ g.split(prefix_sep)[-1].lstrip('/') for g in cached_galleries ]
+
+def get_name(s):
+    return os.path.splitext(os.path.split(s)[1])[0]
 
 def get_gallery_images(gallery_id):
 
+    # TODO: SORT ORDER!!!!
+
+    images = {}
+    check_cache()
     cached_galleries = get_galleries()
     files = cached_galleries[cached_galleries.keys()[gallery_id-1]]
-    return files
 
-#    # return a sorted list of all the images for a specific gallery
-#    files = []
-#
-#    # galleries are indexed from 1 for nicer URLs
-#    gallery_folders = get_gallery_folders()
-#    g = gallery_folders[gallery_id-1]
-#
-#    fs = [os.path.join(g, f) for f in os.listdir(os.path.join(dbox, g)) if is_image(os.path.join(dbox, g, f))]
-#
-#    if DEBUG:
-#        app.logger.debug(sorted(fs))
-#
-#    for f in sorted(fs):
-#        files.append({'path': f, 'title': get_image_title(f)})
-#    return files
-#
+    for i in files:
+        images[get_image_title(i)] = i
+
+    return OrderedDict(sorted(images.items(), key=lambda t:get_name(t[1])))
+    #return OrderedDict(sorted(images.items(), key=get_name))
+    #return images
+
 @app.route('/')
 def index():
-    galleries = sorted(get_gallery_names())
+    galleries = get_gallery_names()
     
-    if DEBUG:
-        app.logger.debug(galleries)
+    #if DEBUG:
+    #    app.logger.debug(galleries)
 
     return render_template('main.html', galleries=galleries)
 
@@ -130,14 +125,8 @@ def index():
 def gallery(gallery_id, image_id=None):
 
     # currently a list of dropbox URLs
-    g_images = get_gallery_images(gallery_id-1)
+    g_images = get_gallery_images(gallery_id)
     app.logger.debug(g_images)
-
-    # make a dict: {'title': 'url',...} 
-    # ORDER?
-
-    #if DEBUG:
-    #    app.logger.debug(g_images)
 
     return render_template('gallery.html', gallery_id=gallery_id, image_id=image_id, g_images=g_images, DBOXROOT=dbox)
 
