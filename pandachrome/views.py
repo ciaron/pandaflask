@@ -24,6 +24,11 @@ def check_cache():
 # dropbox media timeout is 4 hours, 14400 secs; share timeout 1 hour (3600s)
 @cache.cached(timeout=3600, key_prefix='all_galleries') 
 def get_galleries():
+
+    # TODO: only get the top-level galleries!
+    # move image url fetching to (cached) functions that get called
+    # when the view is called!!
+
     app.logger.debug('getting galleries')
     # return an OrderedDict of galleries
     galleries = {}

@@ -8,22 +8,24 @@ tk='8d6DYpbiA1IAAAAAAAApQDDC7Yobyv6WYumChXSkp3Zt3OVBwHSKplhSFnWdsr0g'
 api=client.DropboxClient(tk)
 
 r=api.metadata('/')
-
+#pp.pprint(r)
 galleries = {}
 
 for i in r['contents']:
     if i['is_dir'] == True:
         p = i['path']
 
-        galleries[p] = []
-        g = api.metadata(p)
-        for img in g['contents']:
-            if img['mime_type'] in mimes:
-                galleries[p].append(api.media(img['path'])['url'])
+        print p
+        print(api.metadata(p))
+        
+#        galleries[p] = []
+#        g = api.metadata(p)
+#        for img in g['contents']:
+#            if img['mime_type'] in mimes:
+#                galleries[p].append(api.media(img['path'])['url'])
 
-pp.pprint(galleries)
-pp.pprint(api.delta(cursor='AAGwwrIqBAwFxeI6Hr4dpgdR6xxY1n3axBrOsXzTAecutolsJ5SNCvTKMc-4NoQMcwXZ42hjNVJBkAnVf0ONleCX0rsv_8HHv3VRSqIYzfPWWg'))
-
+#pp.pprint(galleries)
+#pp.pprint(api.delta(cursor='AAGwwrIqBAwFxeI6Hr4dpgdR6xxY1n3axBrOsXzTAecutolsJ5SNCvTKMc-4NoQMcwXZ42hjNVJBkAnVf0ONleCX0rsv_8HHv3VRSqIYzfPWWg'))
 """
 # pass the cursor. 
 # if no changes:
