@@ -22,19 +22,17 @@ def check_cache():
     pass
 
 # dropbox media timeout is 4 hours, 14400 secs; share timeout 1 hour (3600s)
-@cache.cached(timeout=3600, key_prefix='all_galleries') 
+@cache.memoize(timeout=3600) 
 def get_galleries():
 
     # TODO: only get the top-level galleries!
     # move image url fetching to (cached) functions that get called
     # when the view is called!!
 
-    app.logger.debug('getting galleries')
-    # return an OrderedDict of galleries
-    galleries = {}
+    galleries = []
 
     from dropbox import client
-    mimes = ['image/png', 'image/jpeg']
+#    mimes = ['image/png', 'image/jpeg']
 
     # my access_token (for user 'ciaron')
     tk='8d6DYpbiA1IAAAAAAAApQDDC7Yobyv6WYumChXSkp3Zt3OVBwHSKplhSFnWdsr0g'
@@ -46,20 +44,21 @@ def get_galleries():
         if i['is_dir'] == True:
             p = i['path']
 
-            galleries[p] = []
-            g = api.metadata(p)
-            for img in g['contents']:
-                if img['mime_type'] in mimes:
-                    #u = api.media(img['path'])['url']
+            galleries.append(p)
+#            g = api.metadata(p)
+#            for img in g['contents']:
+#                if img['mime_type'] in mimes:
+#                    #u = api.media(img['path'])['url']
+#
+#                    u = api.share(img['path'], short_url=False)['url']
+#                    if u.find('?dl=') == -1:
+#                        u = u+'?dl=1'
+#                    else:
+#                        u = u.replace('?dl=0', '?dl=1')
+#                    galleries[p].append(urllib.unquote(u))
 
-                    u = api.share(img['path'], short_url=False)['url']
-                    if u.find('?dl=') == -1:
-                        u = u+'?dl=1'
-                    else:
-                        u = u.replace('?dl=0', '?dl=1')
-                    galleries[p].append(urllib.unquote(u))
-
-    return OrderedDict(sorted(galleries.items(), key=lambda t: t[0]))
+    #return OrderedDict(sorted(galleries.items(), key=lambda t: t[0]))
+    return sorted(galleries)
 
 def is_image(f):
 
@@ -93,27 +92,47 @@ def get_image_title(f):
 def get_gallery_names():
     # return a list of gallery names, (i.e. folders without prefixes), sorted by prefix
     check_cache()
-    cached_galleries = get_galleries().keys()
+    #cached_galleries = get_galleries().keys()
+    cached_galleries = get_galleries()
     return [ g.split(prefix_sep)[-1].lstrip('/') for g in cached_galleries ]
 
 def get_name(s):
     return os.path.splitext(os.path.split(s)[1])[0]
 
+@cache.memoize(timeout=3600) 
 def get_gallery_images(gallery_id):
 
+    app.logger.debug('in get_gallery_images')
+
     # TODO: SORT ORDER!!!!
+    # { url : (path, title) }
+
+    mimes = ['image/png', 'image/jpeg']
+    tk='8d6DYpbiA1IAAAAAAAApQDDC7Yobyv6WYumChXSkp3Zt3OVBwHSKplhSFnWdsr0g'
+    from dropbox import client
+    api=client.DropboxClient(tk)
 
     images = {}
-    check_cache()
-    cached_galleries = get_galleries()
-    files = cached_galleries[cached_galleries.keys()[gallery_id-1]]
+    check_cache() # does nothing for now
+    g = api.metadata(get_galleries()[gallery_id-1])
+    for img in g['contents']:
+        if img['mime_type'] in mimes:
+            u = api.share(img['path'], short_url=False)['url']
+            if u.find('?dl=') == -1:
+                u = u+'?dl=1'
+            else:
+                u = u.replace('?dl=0', '?dl=1')
+            #images.append(urllib.unquote(u))
+            images[(urllib.unquote(u))] = (img['path'], get_image_title(img['path']))
 
-    for i in files:
-        images[get_image_title(i)] = i
+    #files = cached_galleries[cached_galleries.keys()[gallery_id-1]]
 
-    return OrderedDict(sorted(images.items(), key=lambda t:get_name(t[1])))
+    #for i in files:
+    #    images[get_image_title(i)] = i
+
+    return OrderedDict(sorted(images.items(), key=lambda t:get_name(t[1][0])))
     #return OrderedDict(sorted(images.items(), key=get_name))
-    #return images
+    #return sorted(images)
 
 @app.route('/')
 def index():

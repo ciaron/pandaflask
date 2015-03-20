@@ -8,8 +8,8 @@
 {% endif %}
 <br/>
 
-{% for title, image in g_images.iteritems() %}
-    image title: {{ title }}<br/>
-    image filename: {{ image }}<br/>
-    <img src="{{ image }}" width=640/><br/>
+{% for image, title in g_images.iteritems() %}
+  image title: {{ title }}<br/>
+  image filename: {{ image }}<br/>
+  <img src="{{ image }}" width=640/><br/>
 {% endfor %}
